@@ -101,7 +101,7 @@ online-shopping-cart/
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/Divyanshutiwari102/online-shopping-cart.git
+git clone https://github.com/Divyanshutiwari102/Nexova.git
 cd online-shopping-cart
 
 # 2. Install dependencies
@@ -343,5 +343,4 @@ java -jar target/eCommerceProject-0.0.1-SNAPSHOT.jar
 - Never commit real passwords to GitHub — use environment variables in production
 - Aiven password visible in this repo should be rotated after testing
 
----
 
