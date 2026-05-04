@@ -1,4 +1,4 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "REACT_APP_API_URL=https://nexova-0jju.onrender.com npm run build",
   "outputDirectory": "build"
 }
