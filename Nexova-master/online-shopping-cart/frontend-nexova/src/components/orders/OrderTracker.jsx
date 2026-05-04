@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { getOrderByNumber, getAllOrders, cancelOrder } from '../../services/api'
 
 const STATUS_STEPS = [
-  { key: 'CONFIRMED',   label: 'Order Confirmed', icon: '✓', desc: 'Your order has been placed' },
-  { key: 'PROCESSING',  label: 'Processing',       icon: '⚙', desc: 'Order is being prepared' },
-  { key: 'SHIPPED',     label: 'Shipped',          icon: '📦', desc: 'Out for delivery' },
-  { key: 'DELIVERED',   label: 'Delivered',        icon: '🏠', desc: 'Delivered successfully' },
+  { key: 'CONFIRMED',  label: 'Order Confirmed', icon: '✓', desc: 'Your order has been placed' },
+  { key: 'PROCESSING', label: 'Processing',      icon: '⚙', desc: 'Order is being prepared' },
+  { key: 'SHIPPED',    label: 'Shipped',         icon: '📦', desc: 'Out for delivery' },
+  { key: 'DELIVERED',  label: 'Delivered',       icon: '🏠', desc: 'Delivered successfully' },
 ]
 
 const STATUS_BADGE = {
@@ -17,19 +17,20 @@ const STATUS_BADGE = {
 }
 
 export default function OrderTracker({ onClose }) {
-  const [tab, setTab] = useState('track')
-  const [orderNum, setOrderNum] = useState('')
-  const [order, setOrder] = useState(null)
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [tab, setTab]                 = useState('track')
+  const [orderNum, setOrderNum]       = useState('')
+  const [order, setOrder]             = useState(null)
+  const [orders, setOrders]           = useState([])
+  const [loading, setLoading]         = useState(false)
   const [cancellingId, setCancellingId] = useState(null)
-  const [err, setErr] = useState('')
+  const [err, setErr]                 = useState('')
 
-  const handleTrack = async () => {
-    if (!orderNum.trim()) { setErr('Enter order number'); return }
+  const handleTrack = async (numOverride) => {
+    const num = (numOverride ?? orderNum).toString().trim()
+    if (!num) { setErr('Enter order number'); return }
     setLoading(true); setErr(''); setOrder(null)
     try {
-      const { data } = await getOrderByNumber(orderNum.trim())
+      const { data } = await getOrderByNumber(num)
       setOrder(data)
     } catch {
       setErr('Order not found. Check your order number.')
@@ -58,6 +59,13 @@ export default function OrderTracker({ onClose }) {
       alert(e?.response?.data || 'Could not cancel this order. Please try again.')
     }
     setCancellingId(null)
+  }
+
+  // FIX: auto-trigger track when clicking "Track →" from history tab
+  const handleTrackFromHistory = (num) => {
+    setTab('track')
+    setOrderNum(String(num))
+    handleTrack(num)   // pass directly so we don't wait for state update
   }
 
   const canCancel = (status) =>
@@ -111,7 +119,7 @@ export default function OrderTracker({ onClose }) {
                   onKeyDown={e => e.key === 'Enter' && handleTrack()}
                 />
                 <button
-                  onClick={handleTrack}
+                  onClick={() => handleTrack()}
                   disabled={loading}
                   className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
                 >
@@ -125,7 +133,6 @@ export default function OrderTracker({ onClose }) {
 
               {order && (
                 <div className="space-y-4 pt-2">
-                  {/* Order info card */}
                   <div className="bg-neutral-50 dark:bg-neutral-900 rounded-xl p-4 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-neutral-400">Order #</span>
@@ -153,7 +160,6 @@ export default function OrderTracker({ onClose }) {
                     </div>
                   </div>
 
-                  {/* Progress tracker OR cancelled state */}
                   {!isCancelled ? (
                     <div>
                       <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">Delivery Status</p>
@@ -192,7 +198,6 @@ export default function OrderTracker({ onClose }) {
                     </div>
                   )}
 
-                  {/* Cancel button */}
                   {canCancel(order.orderStatus) && (
                     <button
                       onClick={() => handleCancel(order.orderNumber, () => setOrder(prev => ({ ...prev, orderStatus: 'CANCELLED' })))}
@@ -253,8 +258,9 @@ export default function OrderTracker({ onClose }) {
                               {cancellingId === o.orderNumber ? 'Cancelling...' : 'Cancel ✕'}
                             </button>
                           )}
+                          {/* FIX: now auto-triggers track instead of just setting input */}
                           <button
-                            onClick={() => { setTab('track'); setOrderNum(String(o.orderNumber)) }}
+                            onClick={() => handleTrackFromHistory(o.orderNumber)}
                             className="text-xs text-brand-500 hover:underline font-medium"
                           >Track →</button>
                         </div>
