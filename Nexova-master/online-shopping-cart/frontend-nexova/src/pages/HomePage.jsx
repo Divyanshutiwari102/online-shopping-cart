@@ -9,7 +9,7 @@ import { useProducts } from '../hooks/useProducts'
 
 export default function HomePage({ searchQuery, setSearchQuery, onAuthRequired }) {
   const {
-    filteredProducts, products, loading, isDemo, activeCategory, setActiveCategory,
+    filteredProducts, products, loading, isDemo, wakingUp, activeCategory, setActiveCategory,
   } = useProducts()
 
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -25,7 +25,10 @@ export default function HomePage({ searchQuery, setSearchQuery, onAuthRequired }
     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {!searchQuery && <Hero onShopNow={() => document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' })} />}
       {!searchQuery && <StatsBar productCount={products.length} />}
-      {isDemo && <DemoBanner />}
+
+      {/* Pass wakingUp so banner shows correct message */}
+      {isDemo && <DemoBanner wakingUp={wakingUp} />}
+
       {!searchQuery && <CategoryBar active={activeCategory} onChange={setActiveCategory} />}
 
       <div id="products-section" className="flex items-center justify-between mt-8 mb-5">
